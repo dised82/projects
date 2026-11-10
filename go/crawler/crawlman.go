@@ -19,14 +19,15 @@ func crawl(url string, data *data) {
 		return
 	}
 
-	cmd, err := exec.Command("python3", "crawler.py", url).Output()
+	cmd := exec.Command("python3", "crawler.py", url)
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("python3 failed for %s: %v\n output:\n%s", url, err, output)
 	}
 
 	var urls []string
-	if err := json.Unmarshal(cmd, &urls); err != nil {
-		log.Fatalf("json invalide : %v", err)
+	if err := json.Unmarshal(output, &urls); err != nil {
+		log.Fatalf("json invalide %s: %v\n output:\n%s", url, err, output)
 	}
 
 	var wait sync.WaitGroup
