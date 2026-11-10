@@ -6,10 +6,16 @@ import (
 	"html"
 	"log"
 	"os/exec"
+	"sync"
 )
 
-func crawl(url string, fetched map[string]bool) {
-	if fetched[url] {
+func crawl(url string, data *data) {
+	data.mu.Lock()
+	already := data.buffer[url]
+	data.buffer[url] = true
+	data.mu.Unlock()
+
+	if already {
 		return
 	}
 
@@ -23,8 +29,13 @@ func crawl(url string, fetched map[string]bool) {
 		log.Fatalf("json invalide : %v", err)
 	}
 
+	var wait sync.WaitGroup
 	for i, u := range urls {
-		fetched[html.UnescapeString(u)] = true
+		wait.Add(1)
+		defer wait.Done()
+		go crawl(html.UnescapeString(u), data)
+		//fetched[html.UnescapeString(u)] = true
 		fmt.Println(i, html.UnescapeString(u), "raw: ", u)
 	}
+	wait.Wait()
 }

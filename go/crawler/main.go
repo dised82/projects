@@ -3,9 +3,15 @@ package main
 import (
 	"log"
 	"os"
+	"sync"
 )
 
-var buffer map[string]bool
+type data struct {
+	mu     sync.Mutex
+	buffer map[string]bool
+}
+
+var buff = data{buffer: make(map[string]bool)}
 
 func main() {
 	if len(os.Args) != 2 {
@@ -14,5 +20,5 @@ func main() {
 		}
 		log.Fatal("too many arguments")
 	}
-	crawl(os.Args[1], buffer)
+	crawl(os.Args[1], &buff)
 }
