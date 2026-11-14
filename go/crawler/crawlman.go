@@ -33,8 +33,11 @@ func crawl(url string, data *data) {
 	var wait sync.WaitGroup
 	for i, u := range urls {
 		wait.Add(1)
-		defer wait.Done()
-		go crawl(html.UnescapeString(u), data)
+		go func(u string) {
+			defer wait.Done()
+			crawl(u, data)
+		}(html.UnescapeString(u))
+
 		//fetched[html.UnescapeString(u)] = true
 		fmt.Println(i, html.UnescapeString(u), "raw: ", u)
 	}
